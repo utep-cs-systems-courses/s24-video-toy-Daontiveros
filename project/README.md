@@ -24,10 +24,10 @@ The square is color sea green.
 Button S2 makes the square go down.
 The square is color hot pink.
 
-Button S3 makes the square go right.
+Button S3 makes the square go left.
 The square is color dark viole.
 
-Button S4  makes the square go left.
+Button S4  makes the square go right.
 The square is color cyan.
 
 To move diagonally you press two buttons at the same time.
