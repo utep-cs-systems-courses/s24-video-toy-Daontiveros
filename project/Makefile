@@ -21,6 +21,8 @@ clean:
 	rm -f README.md~
 	rm -f wakedemo.c~
 	rm -f Makefile~
+	rm -f buzzer.h~
+	rm -f buzzer.c~
 
 
 buzzer.c: buzzer.h
