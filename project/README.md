@@ -4,7 +4,8 @@
 
 A program that makes a square go up, down, left, right
 depending on the buttons you press. Can also move
-diagonally with pressing two buttons at once.
+diagonally with pressing two buttons at once. Also
+plays a song.
 
 
 ## Main

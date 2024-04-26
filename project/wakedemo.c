@@ -2,7 +2,7 @@
 #include <libTimer.h>
 #include "lcdutils.h"
 #include "lcddraw.h"
-
+#include "buzzer.h"
 
 
 // WARNING: LCD DISPLAY USES P1.0.  Do not touch!!!
@@ -75,16 +75,60 @@ void screen_update_ball(){
   return;/* nothing to do */
  redraw:
   draw_ball(drawPos[0], drawPos[1], COLOR_BLUE); /* erase */
-  for (char axis = 0; axis < 2; axis ++)
+  for (char axis = 0; axis < 2; axis++)
     drawPos[axis] = controlPos[axis];
   // you call the fillRectangle with colorChange
   draw_ball(drawPos[0], drawPos[1], colorChange); /* draw */
 }
 
+// change state of song one
+// max change state of song one
+char change_state = 0;
+char STATE_MAX = 8;
 
 short redrawScreen = 1;
 u_int controlFontColor = COLOR_GREEN;
 
+
+// state machine changes every second
+// it changes the frequencies
+// from case 0 to case 7
+int song_one(){
+  switch(change_state){
+  case 0:
+    buzzer_set_period(164);
+    break;
+  case 1:
+    buzzer_set_period(329);
+    break;
+  case 2:
+    buzzer_set_period(300);
+    break;
+  case 3:
+    buzzer_set_period(329);
+    break;
+  case 4:
+    buzzer_set_period(400);
+    break;
+  case 5:
+    buzzer_set_period(329);
+    break;
+  case 6:
+    buzzer_set_period(264);
+    break;
+  case 7:
+    buzzer_set_period(100);
+    break;
+  }
+}
+
+// change the state
+int sec(){
+  change_state++;
+  if(change_state >= STATE_MAX){
+    change_state = 0;
+  }
+}
 
 void wdt_c_handler(){
   // the switches
@@ -95,8 +139,17 @@ void wdt_c_handler(){
   // index 0 on the arrays is for x, and index 1 is for y
   short oldCol_x = controlPos[0];
   short oldCol_y = controlPos[1];
+
+  static int sec_count = 0; //remember value last time it was called
+  // every second change the state
+  sec_count++;
+  if(sec_count == 100){
+    sec_count = 0;
+    sec();
+  }
+
   // if S1 is pressed
-  if(switches & SW4) {
+  if(switches & SW4){  
     // change the color of the square
     colorChange = COLOR_SEA_GREEN;
     // the new position has to be the x-axis plus 1
@@ -108,7 +161,8 @@ void wdt_c_handler(){
       // this will be the new position
       // it doesn't update the square, just the future position
       controlPos[0] = newCol;
-     }
+    }   
+     
   }
   if(switches & SW3){
     colorChange = COLOR_HOT_PINK;
@@ -146,9 +200,8 @@ void wdt_c_handler(){
 
 }
 
-
-
 void update_shape();
+void update_song();
 
 void main(){
 
@@ -157,6 +210,7 @@ void main(){
   configureClocks();
   lcd_init();
   switch_init();
+  buzzer_init();
 
   enableWDTInterrupts();      /**< enable periodic interrupt */
   or_sr(0x8);              /**< GIE (enable interrupts) */
@@ -165,11 +219,18 @@ void main(){
   while (1) {/* forever */
     // if redrawScreen is 1 update the shape
     // redrawScreen always turns into 1 when you press a button
-    if (redrawScreen) {
+    if(redrawScreen) {
       // reset it
       redrawScreen = 0;
       update_shape();
     }
+    // play state machine then change states
+    song_one();
+   
+    // if(change_song){
+    // change_song = 0;
+    // song_one();
+    // }
     // when you press a button you can see the CPU turning on and off
     P1OUT &= ~LED;/* led off */
     or_sr(0x10);/**< CPU OFF */
@@ -181,7 +242,7 @@ void main(){
  * if it's not 1, it does not call it
  */
 void update_shape(){
-      screen_update_ball();
+    screen_update_ball();
 }
 
 // the interrupt
