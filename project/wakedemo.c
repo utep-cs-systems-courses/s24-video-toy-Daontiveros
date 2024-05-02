@@ -56,7 +56,7 @@ void switch_interrupt_handler(){
  */
 short drawPos[2] = {1,1}, controlPos[2] = {2, 2};
 short colVelocity = 1, colLimits[2] = {1, screenWidth/2};
-short colLimits_2[2] = {1, screenHeight-10};
+short colLimits_2[2] = {1, screenHeight/2};
 
 // draw the square
 void draw_ball(int col, int row, unsigned short color){
@@ -69,7 +69,7 @@ void draw_ball(int col, int row, unsigned short color){
  * is not the same as the new position.
  */
 void screen_update_ball(){
-  for (char axis = 0; axis < 2; axis ++)
+  for (char axis = 0; axis < 2; axis++)
     if (drawPos[axis] != controlPos[axis]) /* position changed? */
       goto redraw;
   return;/* nothing to do */
@@ -81,10 +81,13 @@ void screen_update_ball(){
   draw_ball(drawPos[0], drawPos[1], colorChange); /* draw */
 }
 
-// change state of song one
-// max change state of song one
+// change the states of each song
+// max change state of the songs
 char change_state = 0;
 char STATE_MAX = 8;
+
+// changes the state machines for the songs
+char changeSong = 0;
 
 short redrawScreen = 1;
 u_int controlFontColor = COLOR_GREEN;
@@ -122,6 +125,104 @@ int song_one(){
   }
 }
 
+// state machine changes every second
+// it changes the frequencies
+// from case 0 to case 7
+int song_two(){
+  switch(change_state){
+  case 0:
+    buzzer_set_period(164);
+    break;
+  case 1:
+    buzzer_set_period(200);
+    break;
+  case 2:
+    buzzer_set_period(300);
+    break;
+  case 3:
+    buzzer_set_period(429);
+    break;
+  case 4:
+    buzzer_set_period(500);
+    break;
+  case 5:
+    buzzer_set_period(729);
+    break;
+  case 6:
+    buzzer_set_period(964);
+    break;
+  case 7:
+    buzzer_set_period(1000);
+    break;
+  }
+}
+
+// state machine changes every second
+// it changes the frequencies
+// from case 0 to case 7
+int song_three(){
+  switch(change_state){
+  case 0:
+    buzzer_set_period(500);
+    break;
+  case 1:
+    buzzer_set_period(1000);
+    break;
+  case 2:
+    buzzer_set_period(400);
+    break;
+  case 3:
+    buzzer_set_period(1000);
+    break;
+  case 4:
+    buzzer_set_period(300);
+    break;
+  case 5:
+    buzzer_set_period(1000);
+    break;
+  case 6:
+    buzzer_set_period(200);
+    break;
+  case 7:
+    buzzer_set_period(1000);
+    break;
+  }
+}
+
+// state machine changes every second
+// it changes the frequencies
+// from case 0 to case 7
+int song_four(){
+  switch(change_state){
+  case 0:
+    buzzer_set_period(500);
+    break;
+  case 1:
+    buzzer_set_period(400);
+    break;
+  case 2:
+    buzzer_set_period(600);
+    break;
+  case 3:
+    buzzer_set_period(300);
+    break;
+  case 4:
+    buzzer_set_period(700);
+    break;
+  case 5:
+    buzzer_set_period(200);
+    break;
+  case 6:
+    buzzer_set_period(800);
+    break;
+  case 7:
+    buzzer_set_period(100);
+    break;
+  }
+}
+
+
+
 // change the state
 int sec(){
   change_state++;
@@ -152,6 +253,7 @@ void wdt_c_handler(){
   if(switches & SW4){  
     // change the color of the square
     colorChange = COLOR_SEA_GREEN;
+    changeSong = 4;
     // the new position has to be the x-axis plus 1
     // to move right
     short newCol = oldCol_x + colVelocity;
@@ -166,6 +268,7 @@ void wdt_c_handler(){
   }
   if(switches & SW3){
     colorChange = COLOR_HOT_PINK;
+    changeSong = 3;
     // the new position on the x-axis
     // moves left so you subtract 1 from the future position
     // you move backwards towards the negatives
@@ -177,19 +280,21 @@ void wdt_c_handler(){
   }
   if(switches & SW2){
     colorChange = COLOR_DARK_VIOLE;
+    changeSong = 2;
     // the new position on the y_axis
     // moves down
     // update controlPos[1], the second index
     // because we are changing the y-axis now
     short newCol = oldCol_y + colVelocity;
-    if (!(newCol <= colLimits_2[0]) || !(newCol >= colLimits_2[1])){
+    // if (!(newCol <= colLimits_2[0])){
       redrawScreen = 1;
       controlPos[1] = newCol;
-    }
+      // }
   }
 
   if(switches & SW1){
     colorChange = COLOR_CYAN;
+    changeSong = 1;
     // moves up
     short newCol = oldCol_y - colVelocity;
     if (!(newCol <= colLimits_2[0]) || !(newCol >= colLimits_2[1])){
@@ -225,7 +330,20 @@ void main(){
       update_shape();
     }
     // play state machine then change states
-    song_one();
+    switch(changeSong){
+    case 1:
+      song_one();
+      break;
+    case 2:
+      song_two();
+      break;
+    case 3:
+      song_three();
+      break;
+    case 4:
+      song_four();
+      break;
+    }
    
     // if(change_song){
     // change_song = 0;

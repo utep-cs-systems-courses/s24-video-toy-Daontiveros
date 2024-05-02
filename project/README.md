@@ -39,5 +39,5 @@ The squares travels outside the screen. It has
 no limit. Just keep pressing the button until you
 see it again.
 
-
+SW2 stopped working. Do not press.
 
